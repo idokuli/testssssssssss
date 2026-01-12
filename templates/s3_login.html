@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<body class="flex items-center justify-center min-h-screen p-6">
+    <div class="glass w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl border border-white/5">
+        <h2 class="text-3xl font-bold mb-8 text-center tracking-tight">S3 Gateway</h2>
+
+        <form method="POST" action="{{ url_for('s3.s3_login') }}" class="space-y-5">
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-500 mb-2 tracking-widest">Access
+                    Key</label>
+                <input type="text" name="access"
+                    class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-blue-500 outline-none text-white"
+                    required>
+            </div>
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-500 mb-2 tracking-widest">Secret
+                    Key</label>
+                <input type="password" name="secret"
+                    class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-blue-500 outline-none text-white"
+                    required>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label
+                        class="block text-[10px] font-black uppercase text-slate-500 mb-2 tracking-widest">Region</label>
+                    <input type="text" name="region" value="us-east-1"
+                        class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-5 py-4 text-white">
+                </div>
+                <div>
+                    <label
+                        class="block text-[10px] font-black uppercase text-slate-500 mb-2 tracking-widest">Bucket</label>
+                    <input type="text" name="bucket"
+                        class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-5 py-4 text-white" required>
+                </div>
+            </div>
+            <button type="submit"
+                class="w-full bg-blue-600 py-5 rounded-2xl font-bold text-lg shadow-lg hover:bg-blue-500 active:scale-95 transition-all mt-4">Establish
+                Uplink</button>
+        </form>
+
+        <div class="text-center mt-8">
+            <a href="{{ url_for('hub') }}" class="text-slate-500 hover:text-white transition-colors text-sm">← Back</a>
+        </div>
+    </div>
+</body>
+{% endblock %}

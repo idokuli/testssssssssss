@@ -1,0 +1,89 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<body class="flex items-center justify-center min-h-screen p-6 relative">
+
+    <div id="test-overlay"
+        class="hidden fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/95 backdrop-blur-xl">
+        <div class="relative flex items-center justify-center mb-8">
+            <div class="w-40 h-40 border-4 border-rose-500/10 border-t-rose-500 rounded-full animate-spin"></div>
+            <div id="timer-display" class="absolute text-5xl font-black font-mono text-white">0</div>
+        </div>
+
+        <h2 class="text-xl font-bold text-rose-500 tracking-widest animate-pulse mb-2">SYSTEM UNDER LOAD</h2>
+        <p id="stat-line" class="text-slate-500 text-xs uppercase font-bold mb-10">Engaging Workers...</p>
+
+        <button onclick="cancelTest()"
+            class="px-8 py-3 rounded-full border border-rose-500/30 text-rose-500 hover:bg-rose-500 hover:text-white transition-all font-bold text-sm">
+            ABORT MISSION
+        </button>
+    </div>
+
+    <div id="main-card"
+        class="glass w-full max-w-md rounded-[2.5rem] p-10 text-center shadow-2xl border border-white/5">
+        <h2 class="text-3xl font-bold mb-8 tracking-tight text-white">Stress Engine</h2>
+
+        <form id="stress-form" class="space-y-8 text-left">
+            <div>
+                <div class="flex justify-between items-end mb-4">
+                    <label class="text-[10px] font-black uppercase text-slate-500">Target Cores</label>
+                    <div class="bg-slate-900 border border-rose-500/50 px-4 py-1 rounded-lg">
+                        <span id="core-val" class="text-rose-500 font-mono font-bold text-xl">1</span>
+                    </div>
+                </div>
+                <input type="range" id="cpu-slider" name="cpu" min="1" max="{{ total_cores }}" value="1"
+                    class="w-full h-2 bg-slate-800 rounded-lg accent-rose-500 cursor-pointer"
+                    oninput="document.getElementById('core-val').innerText = this.value">
+            </div>
+
+            <div>
+                <label class="text-[10px] font-black uppercase text-slate-500 mb-2 block">Duration (Seconds)</label>
+                <input type="number" id="timeout-input" name="timeout" value="30"
+                    class="w-full bg-slate-900 border border-slate-700 rounded-xl px-5 py-4 text-white font-mono outline-none focus:ring-2 focus:ring-rose-500">
+            </div>
+
+            <button type="button" onclick="startTest()"
+                class="w-full bg-rose-600 py-5 rounded-2xl font-bold text-lg shadow-lg hover:bg-rose-500 active:scale-95 transition-all text-white">
+                Engage Load
+            </button>
+        </form>
+        <a href="{{ url_for('hub') }}" class="block mt-10 text-slate-500 text-sm">← Back Home</a>
+    </div>
+
+    <script>
+        let countdownInterval;
+
+        async function startTest() {
+            const formData = new FormData();
+            formData.append('cpu', document.getElementById('cpu-slider').value);
+            formData.append('timeout', document.getElementById('timeout-input').value);
+
+            // Show Overlay
+            document.getElementById('test-overlay').classList.remove('hidden');
+            document.getElementById('stat-line').innerText = `STRESSING ${document.getElementById('cpu-slider').value} CORES`;
+
+            let timeLeft = parseInt(document.getElementById('timeout-input').value);
+            document.getElementById('timer-display').innerText = timeLeft;
+
+            // Start Backend
+            await fetch("{{ url_for('stress.run_stress') }}", { method: 'POST', body: formData });
+
+            // Start Frontend Timer
+            countdownInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer-display').innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    location.reload();
+                }
+            }, 1000);
+        }
+
+        async function cancelTest() {
+            clearInterval(countdownInterval);
+            await fetch("{{ url_for('stress.cancel_stress') }}", { method: 'POST' });
+            location.reload();
+        }
+    </script>
+</body>
+{% endblock %}

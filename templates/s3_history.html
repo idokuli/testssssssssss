@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<body class="min-h-screen p-6">
+    <div class="glass w-full max-w-2xl mx-auto rounded-[2rem] p-8 shadow-2xl border-blue-500/20 border">
+        <a href="{{ url_for('s3.s3_index') }}" class="text-cyan-400 hover:text-cyan-300 text-sm transition-all">
+            &larr; Back to Explorer
+        </a>
+
+        <div class="flex items-center gap-3 mt-4 mb-6">
+            <div class="p-3 rounded-xl bg-amber-500/10 text-amber-400">
+                <i data-lucide="history"></i>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold text-slate-100">Version History</h3>
+                <p class="text-slate-400 text-sm">{{ filename }}</p>
+            </div>
+        </div>
+
+        <div class="space-y-3">
+            {% for v in versions %}
+            <div
+                class="flex flex-wrap items-center justify-between p-4 rounded-xl bg-slate-800/40 border border-slate-700/50">
+                <div class="flex items-center gap-3">
+                    <code class="text-slate-400 text-sm">{{ v.id[:12] }}...</code>
+                    {% if v.is_latest %}
+                    <span
+                        class="px-2 py-0.5 rounded-md text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                        LATEST
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="flex items-center gap-4 text-sm text-slate-400 mt-2 sm:mt-0">
+                    <span>{{ v.last_modified.strftime('%Y-%m-%d %H:%M') }}</span>
+                    <span class="text-slate-500">{{ v.size }} KB</span>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-10 text-slate-500">
+                <i data-lucide="clock" class="w-12 h-12 mx-auto mb-3 opacity-50"></i>
+                <p>No version history available</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+{% endblock %}

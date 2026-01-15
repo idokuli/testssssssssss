@@ -1,41 +1,135 @@
 {% extends "layout.html" %}
 {% block content %}
 
-<body class="flex items-center justify-center min-h-screen p-6">
-    <div class="glass w-full max-w-2xl rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/5">
-        <div class="p-8 bg-blue-600/10 border-b border-white/5 flex justify-between items-center">
-            <div>
-                <h2 class="text-2xl font-bold flex items-center gap-3">
-                    <i data-lucide="folder-git-2" class="text-blue-400"></i> Explorer
-                </h2>
-                <p class="text-xs text-slate-400 mt-1 font-mono">{{ bucket_name }}</p>
+<body class="min-h-screen p-6">
+    <div class="glass w-full max-w-4xl mx-auto rounded-[2rem] p-8 shadow-2xl border-blue-500/20 border">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        {% for msg in messages %}
+        <div
+            class="mb-4 p-4 rounded-xl bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 font-semibold text-center">
+            {{ msg }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <!-- Header -->
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-700 pb-5 mb-6">
+            <div class="flex items-center gap-3">
+                <div class="p-3 rounded-xl bg-emerald-500/10 text-emerald-400">
+                    <i data-lucide="database"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-100">{{ bucket_name }}</h2>
             </div>
+            <input type="text" id="searchInput" placeholder="Search files..."
+                class="flex-grow max-w-md px-4 py-2 rounded-full bg-slate-800/60 border border-slate-600 text-slate-200 placeholder-slate-400 focus:outline-none focus:border-cyan-500">
             <a href="{{ url_for('s3.s3_logout') }}"
-                class="bg-rose-500/10 text-rose-400 px-4 py-2 rounded-xl text-xs font-bold border border-rose-500/20 hover:bg-rose-500/20 transition-all">Sign
-                Out</a>
+                class="px-5 py-2 rounded-lg bg-rose-500/20 text-rose-400 font-bold hover:bg-rose-500/30 transition-all">
+                Logout
+            </a>
         </div>
 
-        <div class="p-6 max-h-[400px] overflow-y-auto">
-            {% if files %}
+        <!-- Config Bar -->
+        <div class="grid md:grid-cols-2 gap-4 mb-6">
+            <div class="flex items-center justify-between p-4 rounded-xl bg-slate-800/40 border border-slate-700">
+                <div class="flex items-center gap-2">
+                    <span class="text-slate-300">Versioning:</span>
+                    <span
+                        class="px-3 py-1 rounded-full text-xs font-bold 
+                        {% if versioning == 'Enabled' %}bg-emerald-500/20 text-emerald-400{% else %}bg-rose-500/20 text-rose-400{% endif %}">
+                        {{ versioning }}
+                    </span>
+                </div>
+                <form action="{{ url_for('s3.set_versioning') }}" method="POST" class="m-0">
+                    <input type="hidden" name="status"
+                        value="{% if versioning == 'Enabled' %}Suspended{% else %}Enabled{% endif %}">
+                    <button type="submit"
+                        class="px-4 py-1.5 rounded-lg bg-slate-700 text-slate-200 text-sm font-semibold hover:bg-slate-600 transition-all">
+                        Switch {% if versioning == 'Enabled' %}OFF{% else %}ON{% endif %}
+                    </button>
+                </form>
+            </div>
+            <div class="flex items-center justify-between p-4 rounded-xl bg-slate-800/40 border border-slate-700">
+                <div class="flex items-center gap-2">
+                    <span class="text-slate-300">Lifecycle:</span>
+                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400">Policy</span>
+                </div>
+                <a href="{{ url_for('s3.apply_policy') }}"
+                    class="px-4 py-1.5 rounded-lg bg-slate-700 text-slate-200 text-sm font-semibold hover:bg-slate-600 transition-all">
+                    Apply 30-Day
+                </a>
+            </div>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="mb-6 p-5 rounded-xl bg-slate-800/30 border-2 border-dashed border-cyan-500/40">
+            <form action="{{ url_for('s3.upload_file') }}" method="post" enctype="multipart/form-data"
+                class="flex flex-wrap items-center gap-4">
+                <label class="text-slate-300 font-semibold">
+                    <i data-lucide="upload" class="inline w-4 h-4 mr-1"></i> Upload File:
+                </label>
+                <input type="file" name="file" required
+                    class="flex-grow text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-cyan-500/20 file:text-cyan-400 file:font-semibold hover:file:bg-cyan-500/30 file:cursor-pointer">
+                <button type="submit"
+                    class="px-5 py-2 rounded-lg bg-cyan-500/20 text-cyan-400 font-bold hover:bg-cyan-500/30 transition-all">
+                    Upload & Categorize
+                </button>
+            </form>
+        </div>
+
+        <!-- File List -->
+        <div id="fileList" class="space-y-2">
             {% for file in files %}
             <div
-                class="flex items-center justify-between p-4 bg-slate-800/40 border border-slate-700/50 rounded-2xl mb-3 hover:bg-slate-700/60 transition-all">
-                <span class="flex items-center gap-3 font-medium text-slate-300">
-                    <i data-lucide="file-text" class="w-4 h-4 text-blue-400"></i>
-                    {{ file }}
-                </span>
-                <span class="text-[9px] font-black text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded">STORED</span>
+                class="file-item flex flex-wrap items-center justify-between p-4 rounded-xl bg-slate-800/40 hover:bg-slate-700/40 transition-all border border-slate-700/50">
+                <div class="flex flex-col">
+                    <span class="text-slate-100 font-semibold">
+                        {% if '/' in file %}{{ file.split('/')[-1] }}{% else %}{{ file }}{% endif %}
+                    </span>
+                    <span class="text-slate-500 text-xs uppercase tracking-wider">{{ file }}</span>
+                </div>
+                <div class="flex items-center gap-2 mt-2 sm:mt-0">
+                    <a href="{{ url_for('s3.file_history', filename=file) }}"
+                        class="px-3 py-1.5 rounded-lg bg-slate-600/50 text-slate-300 text-sm font-semibold hover:bg-slate-600 transition-all">
+                        History
+                    </a>
+                    <a href="{{ url_for('s3.download_file', filename=file) }}"
+                        class="px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 text-sm font-semibold hover:bg-emerald-500/30 transition-all">
+                        Download
+                    </a>
+                    <form action="{{ url_for('s3.delete_file', filename=file) }}" method="POST" class="m-0">
+                        <button type="submit" onclick="return confirm('Delete this file?')"
+                            class="px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-400 text-sm font-semibold hover:bg-rose-500/30 transition-all">
+                            Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-10 text-slate-500">
+                <i data-lucide="folder-open" class="w-12 h-12 mx-auto mb-3 opacity-50"></i>
+                <p>No files in this bucket</p>
             </div>
             {% endfor %}
-            {% else %}
-            <p class="text-slate-500 text-center py-10">No files found.</p>
-            {% endif %}
         </div>
 
-        <div class="p-6 text-center border-t border-white/5">
-            <a href="{{ url_for('hub') }}"
-                class="text-slate-500 hover:text-white transition-colors text-sm font-medium">← Dashboard</a>
+        <!-- Back Link -->
+        <div class="mt-8 text-center">
+            <a href="{{ url_for('hub') }}" class="text-cyan-400 hover:text-cyan-300 transition-all">
+                &larr; Back to Hub
+            </a>
         </div>
     </div>
+
+    <script>
+        document.getElementById('searchInput').addEventListener('keyup', function () {
+            let filter = this.value.toLowerCase();
+            document.querySelectorAll('.file-item').forEach(item => {
+                let text = item.innerText.toLowerCase();
+                item.style.display = text.includes(filter) ? '' : 'none';
+            });
+        });
+    </script>
 </body>
 {% endblock %}

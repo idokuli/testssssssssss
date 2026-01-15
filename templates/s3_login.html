@@ -2,45 +2,86 @@
 {% block content %}
 
 <body class="flex items-center justify-center min-h-screen p-6">
-    <div class="glass w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl border border-white/5">
-        <h2 class="text-3xl font-bold mb-8 text-center tracking-tight">S3 Gateway</h2>
+    <div class="glass w-full max-w-md rounded-[2rem] p-10 shadow-2xl border-blue-500/20 border">
+        <div class="text-center mb-8">
+            <div class="inline-flex p-4 rounded-2xl bg-emerald-500/10 text-emerald-400 mb-4">
+                <i data-lucide="database" class="w-10 h-10"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-100">AWS S3 Login</h2>
+            <p class="text-slate-400 text-sm mt-2">Connect to your S3 bucket</p>
+        </div>
 
-        <form method="POST" action="{{ url_for('s3.s3_login') }}" class="space-y-5">
+        <form action="{{ url_for('s3.s3_login') }}" method="POST" class="space-y-4">
             <div>
-                <label class="block text-[10px] font-black uppercase text-slate-500 mb-2 tracking-widest">Access
-                    Key</label>
-                <input type="text" name="access"
-                    class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-blue-500 outline-none text-white"
-                    required>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Access Key
+                    ID</label>
+                <input type="text" name="access" placeholder="AKIA..." required
+                    class="w-full px-4 py-3 rounded-xl bg-slate-800/60 border border-slate-600 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-all">
             </div>
             <div>
-                <label class="block text-[10px] font-black uppercase text-slate-500 mb-2 tracking-widest">Secret
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Secret Access
                     Key</label>
-                <input type="password" name="secret"
-                    class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-blue-500 outline-none text-white"
-                    required>
+                <input type="password" name="secret" placeholder="Secret Key" required
+                    class="w-full px-4 py-3 rounded-xl bg-slate-800/60 border border-slate-600 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-all">
             </div>
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label
-                        class="block text-[10px] font-black uppercase text-slate-500 mb-2 tracking-widest">Region</label>
-                    <input type="text" name="region" value="us-east-1"
-                        class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-5 py-4 text-white">
-                </div>
-                <div>
-                    <label
-                        class="block text-[10px] font-black uppercase text-slate-500 mb-2 tracking-widest">Bucket</label>
-                    <input type="text" name="bucket"
-                        class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-5 py-4 text-white" required>
-                </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Bucket
+                    Name</label>
+                <input type="text" name="bucket" placeholder="my-bucket-name" required
+                    class="w-full px-4 py-3 rounded-xl bg-slate-800/60 border border-slate-600 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-all">
             </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">AWS
+                    Region</label>
+                <select name="region" required
+                    class="w-full px-4 py-3 rounded-xl bg-slate-800/60 border border-slate-600 text-slate-200 focus:outline-none focus:border-cyan-500 transition-all">
+                    <option value="" disabled selected class="bg-slate-800">Select a region...</option>
+
+                    <optgroup label="North America" class="bg-slate-800">
+                        <option value="us-east-1">US East (N. Virginia)</option>
+                        <option value="us-east-2">US East (Ohio)</option>
+                        <option value="us-west-1">US West (N. California)</option>
+                        <option value="us-west-2">US West (Oregon)</option>
+                        <option value="ca-central-1">Canada (Central)</option>
+                    </optgroup>
+
+                    <optgroup label="Europe / Middle East / Africa" class="bg-slate-800">
+                        <option value="eu-west-1">Europe (Ireland)</option>
+                        <option value="eu-west-2">Europe (London)</option>
+                        <option value="eu-west-3">Europe (Paris)</option>
+                        <option value="eu-central-1">Europe (Frankfurt)</option>
+                        <option value="eu-south-1">Europe (Milan)</option>
+                        <option value="eu-north-1">Europe (Stockholm)</option>
+                        <option value="me-south-1">Middle East (Bahrain)</option>
+                        <option value="af-south-1">Africa (Cape Town)</option>
+                    </optgroup>
+
+                    <optgroup label="Asia Pacific" class="bg-slate-800">
+                        <option value="ap-east-1">Asia Pacific (Hong Kong)</option>
+                        <option value="ap-south-1">Asia Pacific (Mumbai)</option>
+                        <option value="ap-northeast-3">Asia Pacific (Osaka)</option>
+                        <option value="ap-northeast-2">Asia Pacific (Seoul)</option>
+                        <option value="ap-southeast-1">Asia Pacific (Singapore)</option>
+                        <option value="ap-southeast-2">Asia Pacific (Sydney)</option>
+                        <option value="ap-northeast-1">Asia Pacific (Tokyo)</option>
+                    </optgroup>
+
+                    <optgroup label="South America" class="bg-slate-800">
+                        <option value="sa-east-1">South America (São Paulo)</option>
+                    </optgroup>
+                </select>
+            </div>
+
             <button type="submit"
-                class="w-full bg-blue-600 py-5 rounded-2xl font-bold text-lg shadow-lg hover:bg-blue-500 active:scale-95 transition-all mt-4">Establish
-                Uplink</button>
+                class="w-full mt-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-bold hover:from-cyan-400 hover:to-emerald-400 transition-all shadow-lg shadow-cyan-500/25">
+                Connect to S3
+            </button>
         </form>
 
-        <div class="text-center mt-8">
-            <a href="{{ url_for('hub') }}" class="text-slate-500 hover:text-white transition-colors text-sm">← Back</a>
+        <div class="mt-6 text-center">
+            <a href="{{ url_for('hub') }}" class="text-slate-400 hover:text-cyan-400 text-sm transition-all">
+                &larr; Back to Hub
+            </a>
         </div>
     </div>
 </body>

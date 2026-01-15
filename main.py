@@ -1,4 +1,4 @@
-import os, secrets, subprocess, sys, multiprocessing
+import os, secrets, subprocess, sys, multiprocessing, socket
 from flask import Flask, render_template
 from routes.s3_routes import s3_bp
 from routes.stress_routes import stress_bp
@@ -14,9 +14,21 @@ app.register_blueprint(stress_bp, url_prefix='/stress')
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 cert, key = os.path.join(BASE_DIR, 'cert.pem'), os.path.join(BASE_DIR, 'key.pem')
 
+def get_ip_address():
+    """Get the machine's IP address"""
+    try:
+        # Connect to an external address to determine the local IP
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return "127.0.0.1"
+
 @app.route('/')
 def hub():
-    return render_template('hub.html', cores=multiprocessing.cpu_count())
+    return render_template('hub.html', cores=multiprocessing.cpu_count(), ip_address=get_ip_address())
 
 @app.route('/health')
 def health():

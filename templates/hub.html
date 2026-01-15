@@ -3,7 +3,20 @@
 
 <body class="flex items-center justify-center min-h-screen p-6">
     <div class="glass w-full max-w-lg rounded-[2.5rem] p-10 shadow-2xl text-center border-blue-500/20 border">
-        <h1 class="text-4xl font-extrabold tracking-tight">Node Commander</h1>
+        <h1 class="text-4xl font-extrabold tracking-tight">Project's Hub</h1>
+
+        <!-- IP Address Monitor Box -->
+        <div
+            class="mt-6 p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center gap-3">
+            <div class="p-2 rounded-lg bg-cyan-500/20 text-cyan-400">
+                <i data-lucide="network"></i>
+            </div>
+            <div class="text-left">
+                <p class="text-xs text-cyan-400/70 uppercase tracking-wider">Machine IP</p>
+                <p class="font-mono text-lg text-cyan-300 font-bold">{{ ip_address }}</p>
+            </div>
+        </div>
+
         <div class="grid gap-4 mt-10">
             <a href="{{ url_for('s3.s3_index') }}"
                 class="flex items-center gap-5 p-5 rounded-2xl bg-slate-800/40 hover:bg-slate-700/60 transition-all group">

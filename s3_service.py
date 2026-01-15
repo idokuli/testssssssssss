@@ -48,3 +48,16 @@ class S3Service:
 
     def delete_object(self, bucket_name, filename):
         return self.s3.delete_object(Bucket=bucket_name, Key=filename)
+
+    def apply_lifecycle(self, bucket_name):
+        return self.s3.put_bucket_lifecycle_configuration(
+            Bucket=bucket_name,
+            LifecycleConfiguration={
+                'Rules': [{
+                    'ID': '30DayDelete',
+                    'Status': 'Enabled',
+                    'Filter': {'Prefix': ''},
+                    'Expiration': {'Days': 30}
+                }]
+            }
+        )

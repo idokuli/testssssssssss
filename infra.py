@@ -4,12 +4,12 @@ import sys
 
 # --- STATIC CONFIGURATION ---
 CONFIG = {
-    'REGION': 'us-east-1',
+    'REGION': 'eu-north-1',
     'VPC_CIDR': '10.50.0.0/16',
     'SN_A_CIDR': '10.50.1.0/24',
     'SN_B_CIDR': '10.50.2.0/24',
-    'MY_AMI_ID': 'ami-0d5debe8444dbe950', # <--- Replace with your AMI ID
-    'INSTANCE_TYPE': 't3.large',
+    'MY_AMI_ID': 'ami-02490240b123d5e48', # <--- Replace with your AMI ID
+    'INSTANCE_TYPE': 'm7i-flex.large',
     'PROJECT_TAG': 'S3HubSecureNLB'
 }
 
@@ -96,8 +96,27 @@ def build_infra():
         asg.create_auto_scaling_group(
             AutoScalingGroupName=asg_name,
             LaunchTemplate={'LaunchTemplateName': lt_name, 'Version': '$Latest'},
-            MinSize=2, MaxSize=6,DesiredCapacity=2, VPCZoneIdentifier=f"{sn_a},{sn_b}",
-            TargetGroupARNs=[tg_arn]
+            MinSize=2, MaxSize=6, DesiredCapacity=2, VPCZoneIdentifier=f"{sn_a},{sn_b}",
+            TargetGroupARNs=[tg_arn],
+            # Instance Maintenance Policy: Launch new instances before terminating old ones
+            InstanceMaintenancePolicy={
+                'MinHealthyPercentage': 100,
+                'MaxHealthyPercentage': 110
+            }
+        )
+
+        # 10. Target Tracking Scaling Policy (50% CPU Utilization)
+        asg.put_scaling_policy(
+            AutoScalingGroupName=asg_name,
+            PolicyName=f"{asg_name}-cpu-target-tracking",
+            PolicyType='TargetTrackingScaling',
+            TargetTrackingConfiguration={
+                'PredefinedMetricSpecification': {
+                    'PredefinedMetricType': 'ASGAverageCPUUtilization'
+                },
+                'TargetValue': 50.0,
+                'DisableScaleIn': False
+            }
         )
 
         print("\n" + "="*45)

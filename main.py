@@ -1,4 +1,5 @@
 import os, secrets, subprocess, sys, multiprocessing, socket
+import requests
 from flask import Flask, render_template
 from routes.s3_routes import s3_bp
 from routes.stress_routes import stress_bp
@@ -15,16 +16,12 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 cert, key = os.path.join(BASE_DIR, 'cert.pem'), os.path.join(BASE_DIR, 'key.pem')
 
 def get_ip_address():
-    """Get the machine's IP address"""
+    """Get the machine's public IP address"""
     try:
-        # Connect to an external address to determine the local IP
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8", 80))
-        ip = s.getsockname()[0]
-        s.close()
-        return ip
+        response = requests.get("https://httpbin.org/ip", timeout=5)
+        return response.json().get("origin", "Unknown")
     except Exception:
-        return "127.0.0.1"
+        return "Unknown"
 
 @app.route('/')
 def hub():
